@@ -55,7 +55,6 @@ TEMPLATES = [{
 WSGI_APPLICATION = 'inVisionU.wsgi.application'
 
 DATABASE_URL = os.getenv('DATABASE_URL')
-print(f"DATABASE_URL = {DATABASE_URL}")
 if DATABASE_URL:
     DATABASES = {'default': dj_database_url.parse(DATABASE_URL)}
 else:
@@ -96,13 +95,25 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
+# CORS
 CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
 
 ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY', '')
 
 MEDIA_URL  = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
-
 STATIC_URL = '/static/'
 
 LANGUAGE_CODE = 'ru-ru'
