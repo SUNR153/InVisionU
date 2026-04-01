@@ -55,6 +55,7 @@ TEMPLATES = [{
 WSGI_APPLICATION = 'inVisionU.wsgi.application'
 
 DATABASE_URL = os.getenv('DATABASE_URL')
+print(f"DATABASE_URL = {DATABASE_URL}")
 if DATABASE_URL:
     DATABASES = {'default': dj_database_url.parse(DATABASE_URL)}
 else:
