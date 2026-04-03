@@ -1,7 +1,7 @@
 import threading
 import logging
 
-from django.db.models import Avg, Q, F
+from django.db.models import Avg, Q
 from rest_framework import status, permissions
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
@@ -135,7 +135,9 @@ def submit_application(request):
     thread = threading.Thread(target=run_scoring, args=(candidate.id,), daemon=True)
     thread.start()
 
-    return Response({'message': 'Заявка принята! Оценка займёт 1–2 минуты.'})
+    from candidates.emails import send_application_received
+    threading.Thread(target=send_application_received, args=(candidate,), daemon=True).start()
+    return Response({"message": "Заявка принята! Оценка займёт 1–2 минуты."})
 
 
 @api_view(['GET'])
@@ -189,14 +191,14 @@ def all_candidates(request):
         )
 
     sort_map = {
-        'score_desc':  F('score__total_score').desc(nulls_last=True),
-        'score_asc':   F('score__total_score').asc(nulls_last=True),
+        'score_desc':  '-score__total_score',
+        'score_asc':   'score__total_score',
         'date_desc':   '-created_at',
         'date_asc':    'created_at',
         'name':        'first_name',
     }
     sort_key = request.query_params.get('sort', 'score_desc')
-    qs = qs.order_by(sort_map.get(sort_key, F('score__total_score').desc(nulls_last=True)))
+    qs = qs.order_by(sort_map.get(sort_key, '-score__total_score'))
 
     serializer = CandidateListSerializer(qs, many=True)
     return Response({
@@ -245,3 +247,52 @@ def rescore_candidate(request, pk):
     thread.start()
 
     return Response({'message': f'Переоценка запущена для {candidate.full_name}.'})
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsStaff])
+def candidate_comments(request, pk):
+    try:
+        candidate = Candidate.objects.get(pk=pk)
+    except Candidate.DoesNotExist:
+        return Response({'error': 'Не найден.'}, status=404)
+
+    if request.method == 'GET':
+        from candidates.models import Comment
+        comments = Comment.objects.filter(candidate=candidate).select_related('author')
+        data = [{
+            'id':         c.id,
+            'text':       c.text,
+            'author':     c.author.email,
+            'created_at': c.created_at,
+        } for c in comments]
+        return Response(data)
+
+    if request.method == 'POST':
+        text = request.data.get('text', '').strip()
+        if not text:
+            return Response({'error': 'Текст комментария обязателен.'}, status=400)
+
+        from candidates.models import Comment
+        comment = Comment.objects.create(
+            candidate=candidate,
+            author=request.user,
+            text=text,
+        )
+
+        from candidates.emails import send_status_update
+        import threading
+        thread = threading.Thread(
+            target=send_status_update,
+            args=(candidate,),
+            kwargs={'comment': text},
+            daemon=True,
+        )
+        thread.start()
+
+        return Response({
+            'id':         comment.id,
+            'text':       comment.text,
+            'author':     comment.author.email,
+            'created_at': comment.created_at,
+        }, status=201)

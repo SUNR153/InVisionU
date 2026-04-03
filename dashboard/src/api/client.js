@@ -36,9 +36,9 @@ api.interceptors.response.use(
 )
 
 export const authApi = {
-  login:  data    => api.post('/auth/login/', data),
+  login:  data => api.post('/auth/login/', data),
   logout: refresh => api.post('/auth/logout/', { refresh }),
-  me:     ()      => api.get('/auth/me/'),
+  me:     () => api.get('/auth/me/'),
 }
 
 export const adminApi = {
@@ -47,6 +47,8 @@ export const adminApi = {
   candidate:    id           => api.get(`/admin/candidates/${id}/`),
   updateStatus: (id, status) => api.post(`/admin/candidates/${id}/status/`, { status }),
   rescore:      id           => api.post(`/admin/candidates/${id}/rescore/`),
+  comments:     id           => api.get(`/admin/candidates/${id}/comments/`),
+  addComment:   (id, text)   => api.post(`/admin/candidates/${id}/comments/`, { text }),
 }
 
 export default api

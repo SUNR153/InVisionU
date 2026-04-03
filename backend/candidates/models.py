@@ -49,7 +49,7 @@ class Candidate(models.Model):
 
     @property
     def initials(self):
-        return f"{self.first_name[:1]}{self.last_name[:1]}".upper()
+        return f"{self.first_name[0]}{self.last_name[0]}".upper()
 
     @property
     def completion_percent(self):
@@ -81,7 +81,7 @@ class Score(models.Model):
     red_flags      = models.JSONField(default=list, verbose_name='Красные флаги')
     recommendation = models.CharField(
         max_length=20, blank=True, verbose_name='Рекомендация'
-    )
+    )  
 
     raw_response = models.JSONField(default=dict, verbose_name='Сырой ответ Claude')
     scored_at    = models.DateTimeField(auto_now_add=True, verbose_name='Дата оценки')
@@ -92,3 +92,18 @@ class Score(models.Model):
 
     def __str__(self):
         return f"Score({self.candidate.full_name}) = {self.total_score}"
+
+
+class Comment(models.Model):
+    candidate  = models.ForeignKey(Candidate, on_delete=models.CASCADE, related_name='comments')
+    author     = models.ForeignKey('auth.User', on_delete=models.CASCADE)
+    text       = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name        = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+
+    def __str__(self):
+        return f'Comment by {self.author.email} on {self.candidate.full_name}'
