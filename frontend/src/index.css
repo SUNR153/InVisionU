@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
- 
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
- 
+
 :root {
   --green-50:  #E1F5EE;
   --green-100: #9FE1CB;
@@ -9,7 +9,7 @@
   --green-600: #0F6E56;
   --green-800: #085041;
   --green-900: #04342C;
- 
+
   --text:       #0f1a16;
   --text-muted: #4a6358;
   --border:     #c8e6d8;
@@ -19,13 +19,13 @@
   --red-light:  #FCEBEB;
   --amber:      #EF9F27;
   --amber-light:#FAEEDA;
- 
+
   --radius:    12px;
   --radius-sm: 8px;
   --shadow:    0 1px 4px rgba(15,110,86,0.08);
   --shadow-md: 0 4px 16px rgba(15,110,86,0.12);
 }
- 
+
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   color: var(--text);
@@ -33,7 +33,7 @@ body {
   line-height: 1.6;
   font-size: 15px;
 }
- 
+
 input, textarea, select {
   width: 100%;
   padding: 10px 14px;
@@ -46,18 +46,18 @@ input, textarea, select {
   transition: border-color 0.15s, box-shadow 0.15s;
   font-family: inherit;
 }
- 
+
 input:focus, textarea:focus, select:focus {
   border-color: var(--green-400);
   box-shadow: 0 0 0 3px rgba(29,158,117,0.12);
 }
- 
+
 textarea {
   resize: vertical;
   min-height: 100px;
   line-height: 1.6;
 }
- 
+
 button {
   cursor: pointer;
   font-family: inherit;
@@ -67,13 +67,13 @@ button {
   border-radius: var(--radius-sm);
   transition: all 0.15s;
 }
- 
+
 button:active { transform: scale(0.98); }
 button:disabled { opacity: 0.55; cursor: not-allowed; }
- 
+
 a { color: var(--green-600); text-decoration: none; }
 a:hover { text-decoration: underline; }
- 
+
 .btn-primary {
   background: var(--green-400);
   color: #fff;
@@ -85,7 +85,7 @@ a:hover { text-decoration: underline; }
   box-shadow: 0 4px 12px rgba(29,158,117,0.35);
   transform: translateY(-1px);
 }
- 
+
 .btn-secondary {
   background: var(--white);
   color: var(--green-600);
@@ -96,7 +96,7 @@ a:hover { text-decoration: underline; }
   background: var(--green-50);
   border-color: var(--green-100);
 }
- 
+
 .card {
   background: var(--white);
   border: 1.5px solid var(--border);
@@ -104,7 +104,7 @@ a:hover { text-decoration: underline; }
   padding: 24px;
   box-shadow: var(--shadow);
 }
- 
+
 .label {
   display: block;
   font-size: 13px;
@@ -112,13 +112,13 @@ a:hover { text-decoration: underline; }
   color: var(--green-800);
   margin-bottom: 6px;
 }
- 
+
 .error-text {
   font-size: 12px;
   color: var(--red);
   margin-top: 4px;
 }
- 
+
 .page-center {
   min-height: 100vh;
   display: flex;
@@ -126,4 +126,26 @@ a:hover { text-decoration: underline; }
   justify-content: center;
   padding: 24px;
   background: linear-gradient(135deg, var(--green-50) 0%, var(--bg) 60%);
+}
+
+@media (max-width: 768px) {
+  .page-center { padding: 16px; align-items: flex-start; padding-top: 40px; }
+
+  nav { padding: 12px 16px !important; }
+  nav .nav-links { display: none; }
+
+  section { padding: 40px 16px !important; }
+  h1 { font-size: 28px !important; }
+
+  .form-row { grid-template-columns: 1fr !important; }
+
+  .cabinet-grid { grid-template-columns: 1fr !important; }
+  .scores-grid  { grid-template-columns: repeat(3, 1fr) !important; }
+}
+
+@media (max-width: 480px) {
+  h1 { font-size: 24px !important; }
+  .scores-grid { grid-template-columns: 1fr 1fr !important; }
+  .hero-btns { flex-direction: column !important; }
+  .hero-btns button { width: 100% !important; }
 }
