@@ -1,169 +1,318 @@
 # inVision U — AI Система отбора кандидатов
-> Decentrathon 5.0 · Трек AI inDrive
 
-AI-система для первичного отбора кандидатов в inVision University. Кандидаты заполняют анкету на сайте, Claude API автоматически оценивает их по 4 критериям, приёмная комиссия видит результаты в дашборде.
+> **Decentrathon 5.0 · Трек AI inDrive**
+
+AI-система для первичного отбора кандидатов в inVision University. Кандидаты заполняют анкету на сайте, Claude API автоматически оценивает их по 4 критериям, приёмная комиссия видит результаты в дашборде и оставляет комментарии.
+
+---
+
+## Демо
+
+| Компонент | URL |
+|---|---|
+| Сайт кандидата | https://in-vision-u-livid.vercel.app |
+| Панель комиссии | https://in-vision-u-fihe.vercel.app |
+| Backend API | https://invisionu-production-f427.up.railway.app |
+| API Docs (Swagger) | https://invisionu-production-f427.up.railway.app/api/docs/ |
 
 ---
 
 ## Как это работает
 
-Кандидат заполняет анкету → Django отправляет в Claude API
-→ Claude возвращает скор + анализ → Комиссия видит в дашборде
+```
+Кандидат заполняет анкету (4 шага)
+        ↓
+Django отправляет данные в Claude API
+        ↓
+Claude оценивает по 4 критериям + детектирует AI-текст
+        ↓
+Комиссия видит скор, анализ и принимает решение
+        ↓
+Кандидат получает email с результатом
+```
 
-Claude оценивает по 4 критериям (0–10):
-- Мотивация — искренность и глубина целей
-- Лидерство — реальные примеры инициативы
-- Аутентичность — живой голос, не ChatGPT
-- Рост — потенциал и динамика развития
+### Критерии оценки Claude (0–10)
+
+| Критерий | Описание |
+|---|---|
+| Мотивация | Искренность и глубина желания учиться, конкретность целей |
+| Лидерство | Примеры реальной инициативы и действий |
+| Аутентичность | Живой голос, личная история, не ChatGPT |
+| Рост | Динамика развития и потенциал, не только текущий уровень |
+
+### Детект AI-текста
+
+Система анализирует эссе на признаки генерации ChatGPT/Claude:
+- Идеальная структура без живых деталей
+- Общие фразы вместо конкретных историй
+- Отсутствие эмоционального голоса
+- Слишком правильный синтаксис
 
 ---
 
-## Стек
+## Стек технологий
 
-| Часть | Технологии |
+| Слой | Технологии |
 |---|---|
 | Backend | Django 4.2, DRF, PostgreSQL, JWT |
-| AI | Claude API (claude-sonnet) |
+| AI | Claude API (claude-sonnet-4) |
 | Frontend | React 18, Vite, React Router |
-| Deploy | Railway (backend), Vercel (frontend) |
+| Email | Gmail SMTP |
+| Deploy | Railway (backend + DB), Vercel (frontend) |
 
 ---
 
 ## Структура проекта
 
+```
 inVisionU/
 ├── backend/               # Django
-│   ├── config/            # settings, urls
+│   ├── config/            # settings.py, urls.py
 │   ├── candidates/        # модели, скоринг, API
+│   │   ├── models.py      # Candidate, Score, Comment
+│   │   ├── scoring.py     # интеграция с Claude API
+│   │   ├── emails.py      # письма кандидатам
+│   │   └── views.py       # REST API эндпоинты
 │   └── accounts/          # авторизация, JWT
 ├── frontend/              # React — сайт кандидата
+│   └── src/
+│       ├── pages/         # Landing, Register, Login, Form, Cabinet
+│       └── components/    # Navbar, ProgressBar, StatusBadge, Toast
 └── dashboard/             # React — панель комиссии
+    └── src/
+        ├── pages/         # Login, Candidates, CandidateCard, Stats
+        └── components/    # Sidebar, Badges, Comments
+```
 
 ---
 
 ## Быстрый старт
 
-### 1. Backend
+### Требования
+- Python 3.10+
+- Node.js 18+
+- PostgreSQL 14+
 
+### Backend
+
+```bash
 cd backend
 
 # Установить зависимости
 pip install -r requirements.txt
 
-# Создать .env
+# Создать .env файл
 cp .env.example .env
-# Заполнить ANTHROPIC_API_KEY и данные БД
+# Заполнить все переменные
 
-# Создать базу данных
+# Создать БД
 psql -U postgres -c "CREATE DATABASE invisionu;"
 
 # Миграции
 python manage.py makemigrations candidates accounts
 python manage.py migrate
 
-# Создать суперюзера (для комиссии)
+# Создать суперюзера (комиссия)
 python manage.py createsuperuser
 
 # Запустить
 python manage.py runserver
+# → http://localhost:8000
+```
 
-### 2. Frontend (сайт кандидата)
+### Frontend (сайт кандидата)
 
+```bash
 cd frontend
 npm install
 npm run dev
 # → http://localhost:5173
+```
 
-### 3. Dashboard (панель комиссии)
+### Dashboard (панель комиссии)
 
+```bash
 cd dashboard
 npm install
 npm run dev
 # → http://localhost:5174
+```
 
 ---
 
 ## Переменные окружения
 
-Создай backend/.env на основе backend/.env.example:
+Создай `backend/.env`:
 
+```env
+# Django
 SECRET_KEY=твой-секретный-ключ
 DEBUG=True
 
+# База данных
 DB_NAME=invisionu
 DB_USER=postgres
-DB_PASSWORD=твой_пароль
+DB_PASSWORD=пароль
 DB_HOST=localhost
 DB_PORT=5432
 
+# Claude API
 ANTHROPIC_API_KEY=sk-ant-...
 
-Получить ключ Claude: [console.anthropic.com](https://console.anthropic.com)
+# Email (Gmail)
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_HOST_USER=твой@gmail.com
+EMAIL_HOST_PASSWORD=пароль-приложения-16-символов
+DEFAULT_FROM_EMAIL=inVisionU <твой@gmail.com>
+```
 
 ---
 
-## API эндпоинты
+## API Документация
 
 ### Авторизация
-| Метод | URL | Описание |
-|---|---|---|
-| POST | /api/auth/register/ | Регистрация |
-| POST | /api/auth/login/ | Логин |
-| POST | /api/auth/logout/ | Логаут |
-| GET  | /api/auth/me/ | Текущий пользователь |
+
+```bash
+# Регистрация
+POST /api/auth/register/
+{
+  "email": "candidate@example.com",
+  "password": "password123",
+  "password2": "password123"
+}
+# → { "access": "...", "refresh": "...", "is_staff": false }
+
+# Логин
+POST /api/auth/login/
+{
+  "email": "candidate@example.com",
+  "password": "password123"
+}
+# → { "access": "...", "refresh": "...", "is_staff": false }
+```
 
 ### Кандидат
-| Метод | URL | Описание |
-|---|---|---|
-| GET    | /api/me/ | Моя анкета |
-| POST   | /api/me/ | Создать анкету |
-| PATCH  | /api/me/ | Обновить анкету |
-| POST   | /api/me/submit/ | Отправить заявку → запускает скоринг |
+
+```bash
+# Создать анкету
+POST /api/me/
+Authorization: Bearer <token>
+{
+  "first_name": "Айгерим",
+  "last_name": "Сейткали",
+  "age": 17,
+  "city": "Алматы",
+  "school": "НИШ Алматы"
+}
+
+# Обновить анкету (шаг за шагом)
+PATCH /api/me/
+Authorization: Bearer <token>
+{
+  "motivation": "Я хочу изменить образование в Казахстане...",
+  "essay": "Моя история началась в маленьком городе..."
+}
+
+# Отправить заявку (запускает AI скоринг)
+POST /api/me/submit/
+Authorization: Bearer <token>
+# → { "message": "Заявка принята! Оценка займёт 1–2 минуты." }
+
+# Получить статус и результат
+GET /api/me/
+# → { "status": "scored", "score": { "total_score": 8.2, ... } }
+```
 
 ### Комиссия (только staff)
-| Метод | URL | Описание |
-|---|---|---|
-| GET  | /api/admin/stats/ | Статистика дашборда |
-| GET  | /api/admin/candidates/ | Все кандидаты |
-| GET  | /api/admin/candidates/?status=shortlisted | Фильтр |
-| GET  | /api/admin/candidates/?search=Айгерим | Поиск |
-| GET  | /api/admin/candidates/<id>/ | Карточка кандидата |
-| POST | /api/admin/candidates/<id>/status/ | Сменить статус |
-| POST | /api/admin/candidates/<id>/rescore/ | Переоценить |
+
+```bash
+# Статистика дашборда
+GET /api/admin/stats/
+# → { "total": 124, "avg_score": 6.8, "shortlisted": 18, "ai_flagged": 23 }
+
+# Список кандидатов с фильтрами
+GET /api/admin/candidates/?status=scored&sort=score_desc
+GET /api/admin/candidates/?search=Айгерим
+GET /api/admin/candidates/?ai_detected=true
+
+# Карточка кандидата
+GET /api/admin/candidates/1/
+
+# Сменить статус
+POST /api/admin/candidates/1/status/
+{ "status": "shortlisted" }  # или "rejected"
+
+# Добавить комментарий (кандидат получит письмо)
+POST /api/admin/candidates/1/comments/
+{ "text": "Отличная мотивация, рекомендуем к зачислению" }
+
+# Переоценить
+POST /api/admin/candidates/1/rescore/
+```
 
 ---
 
-## Страницы сайта
+## Пример ответа AI скоринга
 
-| URL | Страница |
-|---|---|
-| / | Лендинг |
-| /register | Регистрация |
-| /login | Вход |
-| /form | Анкета (4 шага) |
-| /cabinet | Личный кабинет |
+```json
+{
+  "motivation": 8.5,
+  "leadership": 7.0,
+  "authenticity": 9.0,
+  "growth": 8.0,
+  "total": 8.125,
+  "ai_detected": false,
+  "ai_probability": 0.08,
+  "summary": "Кандидат демонстрирует искреннюю мотивацию и конкретный опыт лидерства. Эссе написано живым языком с личными деталями.",
+  "strengths": [
+    "Конкретный пример организации экологического проекта",
+    "Чёткое понимание миссии inVision U",
+    "Аутентичный голос без шаблонных фраз"
+  ],
+  "red_flags": [],
+  "recommendation": "high"
+}
+```
+
+---
+
+## Email уведомления
+
+Система отправляет письма в следующих случаях:
+
+| Событие | Получатель | Содержание |
+|---|---|---|
+| Регистрация | Кандидат | Приветствие + напоминание о дедлайне |
+| Отправка заявки | Кандидат | Подтверждение получения |
+| Шортлист | Кандидат | Поздравление 🎉 |
+| Отклонение | Кандидат | Вежливый отказ |
+| Комментарий комиссии | Кандидат | Текст комментария |
+
+---
+
+## Ограничения и риски
+
+- **ИИ не принимает финальных решений** — только помогает комиссии расставить приоритеты
+- **Human-in-the-loop** — все решения подтверждаются комиссией вручную
+- **Без демографического скоринга** — система не использует город, школу или возраст как критерии качества
+- **AI-детект не абсолютен** — вероятность ошибки ~15%, поэтому помечается как "требует проверки"
+- **Данные хранятся безопасно** — пароли хешируются, JWT токены с коротким сроком жизни
 
 ---
 
 ## Деплой
 
-### Backend → Railway
-1. Создай проект на [railway.app](https://railway.app)
-2. Добавь PostgreSQL плагин
-3. Подключи GitHub репозиторий
-4. Добавь переменные окружения
-5. python manage.py migrate через Railway CLI
-
-### Frontend → Vercel
-1. Подключи репозиторий на [vercel.com](https://vercel.com)
-2. Root Directory: frontend
-3. Добавь VITE_API_URL=https://твой-бэк.railway.app/api
-4. Deploy
+| Сервис | Платформа | URL |
+|---|---|---|
+| Backend + DB | Railway | invisionu-production-f427.up.railway.app |
+| Frontend | Vercel | in-vision-u-livid.vercel.app |
+| Dashboard | Vercel | in-vision-u-fihe.vercel.app |
 
 ---
 
 ## Команда
 
-Проект создан для хакатона Decentrathon 5.0, трек AI inDrive.
+Проект создан для хакатона **Decentrathon 5.0**, трек **AI inDrive**.
 
-Дедлайн: 5 апреля 2025, 23:59
+**Дедлайн:** 5 апреля 2025, 23:59
