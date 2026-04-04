@@ -3,13 +3,14 @@ import logging
 
 from django.db.models import Avg, Q
 from rest_framework import status, permissions
-from rest_framework.decorators import api_view, permission_classes, parser_classes
+from rest_framework.decorators import api_view, permission_classes, parser_classes, throttle_classes
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 
 from .models import Candidate, Score
+from .throttling import LoginRateThrottle, RegisterRateThrottle, ScoringRateThrottle, AdminRateThrottle
 from .serializers import (
     CandidateSerializer,
     CandidateListSerializer,
@@ -22,6 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 class IsStaff(permissions.BasePermission):
+    """Только Django staff (приёмная комиссия)."""
     def has_permission(self, request, view):
         return bool(request.user and request.user.is_staff)
 
@@ -33,16 +35,34 @@ def _tokens(user) -> dict:
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
+@throttle_classes([RegisterRateThrottle])
 def register(request):
     serializer = RegisterSerializer(data=request.data)
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     user = serializer.save()
-    return Response(_tokens(user), status=status.HTTP_201_CREATED)
+
+    import secrets
+    from candidates.models import EmailVerification
+    from candidates.emails import send_email_verification
+    token = secrets.token_urlsafe(32)
+    EmailVerification.objects.create(user=user, token=token)
+    threading.Thread(
+        target=send_email_verification,
+        args=(user, token),
+        daemon=True
+    ).start()
+
+    return Response({
+        **_tokens(user),
+        'email_sent': True,
+        'message': 'Регистрация успешна! Проверь почту для подтверждения email.',
+    }, status=status.HTTP_201_CREATED)
 
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
+@throttle_classes([LoginRateThrottle])
 def login_view(request):
     email    = request.data.get('email', '').lower().strip()
     password = request.data.get('password', '')
@@ -110,6 +130,7 @@ def my_profile(request):
 
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
+@throttle_classes([ScoringRateThrottle])
 def submit_application(request):
     try:
         candidate = request.user.candidate
@@ -232,6 +253,14 @@ def update_status(request, pk):
     candidate.status = serializer.validated_data['status']
     candidate.save(update_fields=['status'])
 
+    from candidates.models import ActionLog
+    ActionLog.objects.create(
+        candidate=candidate,
+        actor=request.user,
+        action='status_change',
+        details=f'Статус изменён на: {candidate.status}',
+    )
+
     return Response({'status': candidate.status, 'id': candidate.id})
 
 
@@ -245,6 +274,14 @@ def rescore_candidate(request, pk):
 
     thread = threading.Thread(target=run_scoring, args=(candidate.id,), daemon=True)
     thread.start()
+
+    from candidates.models import ActionLog
+    ActionLog.objects.create(
+        candidate=candidate,
+        actor=request.user,
+        action='rescore',
+        details='Запущена переоценка',
+    )
 
     return Response({'message': f'Переоценка запущена для {candidate.full_name}.'})
 
@@ -296,3 +333,69 @@ def candidate_comments(request, pk):
             'author':     comment.author.email,
             'created_at': comment.created_at,
         }, status=201)
+
+
+@api_view(['GET'])
+@permission_classes([IsStaff])
+def action_log(request):
+    from candidates.models import ActionLog
+    logs = ActionLog.objects.select_related('actor', 'candidate').all()[:50]
+    data = [{
+        'id':            l.id,
+        'actor':         l.actor.email,
+        'action':        l.get_action_display(),
+        'candidate':     l.candidate.full_name,
+        'candidate_id':  l.candidate.id,
+        'details':       l.details,
+        'created_at':    l.created_at,
+    } for l in logs]
+    return Response(data)
+
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def verify_email(request):
+    import secrets
+    token = request.data.get('token', '').strip()
+    if not token:
+        return Response({'error': 'Токен обязателен.'}, status=400)
+
+    from candidates.models import EmailVerification
+    try:
+        ev = EmailVerification.objects.get(token=token)
+    except EmailVerification.DoesNotExist:
+        return Response({'error': 'Неверный или истёкший токен.'}, status=400)
+
+    if ev.is_verified:
+        return Response({'message': 'Email уже подтверждён.'})
+
+    ev.is_verified = True
+    ev.save()
+
+    return Response({'message': 'Email успешно подтверждён! Теперь можешь войти.'})
+
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def resend_verification(request):
+    import secrets
+    from candidates.models import EmailVerification
+    from candidates.emails import send_email_verification
+
+    user = request.user
+    ev, _ = EmailVerification.objects.get_or_create(user=user)
+
+    if ev.is_verified:
+        return Response({'message': 'Email уже подтверждён.'})
+
+    ev.token = secrets.token_urlsafe(32)
+    ev.save()
+
+    import threading
+    threading.Thread(
+        target=send_email_verification,
+        args=(user, ev.token),
+        daemon=True
+    ).start()
+
+    return Response({'message': 'Письмо отправлено повторно.'})

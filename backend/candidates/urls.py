@@ -2,9 +2,11 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('auth/register/', views.register,    name='register'),
-    path('auth/login/',    views.login_view,  name='login'),
-    
+    path('auth/register/',            views.register,            name='register'),
+    path('auth/login/',               views.login_view,          name='login'),
+    path('auth/verify-email/',        views.verify_email,        name='verify-email'),
+    path('auth/resend-verification/', views.resend_verification, name='resend-verification'),
+
     path('me/',         views.my_profile,         name='my-profile'),
     path('me/submit/',  views.submit_application, name='submit-application'),
 
@@ -14,4 +16,5 @@ urlpatterns = [
     path('admin/candidates/<int:pk>/status/',       views.update_status,     name='admin-update-status'),
     path('admin/candidates/<int:pk>/rescore/',   views.rescore_candidate,  name='admin-rescore'),
     path('admin/candidates/<int:pk>/comments/', views.candidate_comments, name='admin-comments'),
+    path('admin/log/',                          views.action_log,          name='admin-log'),
 ]

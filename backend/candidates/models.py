@@ -81,7 +81,7 @@ class Score(models.Model):
     red_flags      = models.JSONField(default=list, verbose_name='Красные флаги')
     recommendation = models.CharField(
         max_length=20, blank=True, verbose_name='Рекомендация'
-    )  
+    ) 
 
     raw_response = models.JSONField(default=dict, verbose_name='Сырой ответ Claude')
     scored_at    = models.DateTimeField(auto_now_add=True, verbose_name='Дата оценки')
@@ -107,3 +107,40 @@ class Comment(models.Model):
 
     def __str__(self):
         return f'Comment by {self.author.email} on {self.candidate.full_name}'
+
+
+class ActionLog(models.Model):
+    ACTION_CHOICES = [
+        ('status_change', 'Смена статуса'),
+        ('comment',       'Комментарий'),
+        ('rescore',       'Переоценка'),
+        ('view',          'Просмотр'),
+    ]
+
+    candidate  = models.ForeignKey(Candidate, on_delete=models.CASCADE, related_name='logs')
+    actor      = models.ForeignKey('auth.User', on_delete=models.CASCADE)
+    action     = models.CharField(max_length=30, choices=ACTION_CHOICES)
+    details    = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name        = 'Лог действия'
+        verbose_name_plural = 'Лог действий'
+
+    def __str__(self):
+        return f'{self.actor.email} → {self.action} → {self.candidate.full_name}'
+
+
+class EmailVerification(models.Model):
+    user       = models.OneToOneField('auth.User', on_delete=models.CASCADE, related_name='email_verification')
+    token      = models.CharField(max_length=64, unique=True)
+    is_verified = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name        = 'Подтверждение email'
+        verbose_name_plural = 'Подтверждения email'
+
+    def __str__(self):
+        return f'{self.user.email} — {"✓" if self.is_verified else "✗"}'

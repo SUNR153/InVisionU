@@ -1,6 +1,3 @@
-"""
-emails.py — все письма которые отправляет система.
-"""
 from django.core.mail import send_mail
 from django.conf import settings
 
@@ -25,7 +22,6 @@ def send_registration_confirmation(user):
 
 
 def send_application_received(candidate):
-    """Письмо когда кандидат отправил заявку."""
     send_mail(
         subject='Заявка принята — inVision U',
         message=f'''Привет, {candidate.first_name}!
@@ -44,7 +40,6 @@ def send_application_received(candidate):
 
 
 def send_status_update(candidate, comment=None):
-    """Письмо когда комиссия изменила статус."""
     status_labels = {
         'shortlisted': 'Поздравляем! Твоя заявка включена в шортлист 🎉',
         'rejected':    'К сожалению, твоя заявка не прошла на этот раз.',
@@ -77,5 +72,27 @@ def send_status_update(candidate, comment=None):
 ''',
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[candidate.user.email],
+        fail_silently=True,
+    )
+
+
+def send_email_verification(user, token, frontend_url='https://in-vision-u-livid.vercel.app'):
+    verify_url = f'{frontend_url}/verify-email?token={token}'
+    send_mail(
+        subject='Подтверди свой email — inVision U',
+        message=f'''Привет!
+
+Для завершения регистрации подтверди свой email:
+
+{verify_url}
+
+Ссылка действительна 24 часа.
+
+Если ты не регистрировался — просто проигнорируй это письмо.
+
+Команда inVision U
+''',
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[user.email],
         fail_silently=True,
     )
