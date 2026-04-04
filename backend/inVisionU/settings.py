@@ -144,3 +144,5 @@ LOGGING = {
         'candidates.scoring': {'level': 'DEBUG', 'handlers': ['console'], 'propagate': False},
     },
 }
+
+RESEND_API_KEY = os.getenv('RESEND_API_KEY', '')

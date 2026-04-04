@@ -1,19 +1,20 @@
-from django.core.mail import send_mail
-from django.conf import settings
+import resend
 import logging
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
+
+resend.api_key = settings.RESEND_API_KEY
 
 
 def _send(subject, message, recipient):
     try:
-        send_mail(
-            subject=subject,
-            message=message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[recipient],
-            fail_silently=False,
-        )
+        resend.Emails.send({
+            "from": settings.DEFAULT_FROM_EMAIL,
+            "to": [recipient],
+            "subject": subject,
+            "text": message,
+        })
         logger.info(f"EMAIL SENT: {subject} → {recipient}")
     except Exception as e:
         logger.error(f"EMAIL ERROR: {subject} → {recipient} | {e}")
