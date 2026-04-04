@@ -9,6 +9,7 @@ const NAV = [
   { path: '/flagged',    label: 'AI-флаги',         icon: '⚠️' },
   { path: '/stats',      label: 'Статистика',       icon: '📊' },
   { path: '/baseline',   label: 'Baseline анализ',  icon: '🎯' },
+  { path: '/fairness',   label: 'Fairness анализ',   icon: '⚖️' },
 ]
 
 export default function Sidebar() {

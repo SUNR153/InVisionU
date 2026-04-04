@@ -6,6 +6,7 @@ import Candidates from './pages/Candidates'
 import CandidateCard from './pages/CandidateCard'
 import Stats from './pages/Stats'
 import Baseline from './pages/Baseline'
+import Fairness from './pages/Fairness'
 
 function Layout({ children }) {
   return (
@@ -32,6 +33,7 @@ export default function App() {
         <Route path="/flagged"        element={<StaffRoute><Candidates defaultAI="true" /></StaffRoute>} />
         <Route path="/stats"          element={<StaffRoute><Stats /></StaffRoute>} />
         <Route path="/baseline"       element={<StaffRoute><Baseline /></StaffRoute>} />
+        <Route path="/fairness"       element={<StaffRoute><Fairness /></StaffRoute>} />
         <Route path="*"               element={<Navigate to="/candidates" replace />} />
       </Routes>
     </BrowserRouter>

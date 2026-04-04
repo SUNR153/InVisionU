@@ -5,14 +5,12 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 })
 
-// Добавляем токен к каждому запросу
 api.interceptors.request.use(config => {
   const token = localStorage.getItem('access')
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
 
-// Автообновление токена если истёк
 api.interceptors.response.use(
   res => res,
   async err => {
@@ -39,16 +37,16 @@ api.interceptors.response.use(
   }
 )
 
-// ── Auth ──────────────────────────────────────────────────────────────────────
 export const authApi = {
-  register:       (data) => api.post('/auth/register/', data),
-  login:          (data) => api.post('/auth/login/', data),
-  logout:         (refresh) => api.post('/auth/logout/', { refresh }),
-  me:             () => api.get('/auth/me/'),
-  changePassword: (data) => api.post('/auth/change-password/', data),
+  register:           (data)    => api.post('/auth/register/', data),
+  login:              (data)    => api.post('/auth/login/', data),
+  logout:             (refresh) => api.post('/auth/logout/', { refresh }),
+  me:                 ()        => api.get('/auth/me/'),
+  changePassword:     (data)    => api.post('/auth/change-password/', data),
+  verifyEmail:        (token)   => api.post('/auth/verify-email/', { token }),
+  resendVerification: ()        => api.post('/auth/resend-verification/'),
 }
 
-// ── Кандидат ──────────────────────────────────────────────────────────────────
 export const candidateApi = {
   get:    ()     => api.get('/me/'),
   create: (data) => api.post('/me/', data),
@@ -56,7 +54,6 @@ export const candidateApi = {
   submit: ()     => api.post('/me/submit/'),
 }
 
-// ── Комиссия ──────────────────────────────────────────────────────────────────
 export const adminApi = {
   stats:        ()           => api.get('/admin/stats/'),
   candidates:   (params)     => api.get('/admin/candidates/', { params }),

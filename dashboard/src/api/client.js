@@ -49,6 +49,7 @@ export const adminApi = {
   rescore:      id           => api.post(`/admin/candidates/${id}/rescore/`),
   comments:     id           => api.get(`/admin/candidates/${id}/comments/`),
   addComment:   (id, text)   => api.post(`/admin/candidates/${id}/comments/`, { text }),
+  log:          ()           => api.get('/admin/log/'),
 }
 
 export default api
