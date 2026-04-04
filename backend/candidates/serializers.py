@@ -32,10 +32,11 @@ class CandidateSerializer(serializers.ModelSerializer):
             'age', 'city', 'school', 'phone', 'email',
             'motivation', 'achievement', 'problem', 'future', 'essay',
             'status', 'completion_percent', 'is_complete',
+            'submit_attempts',
             'score',
             'created_at', 'updated_at',
         ]
-        read_only_fields = ['id', 'status', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'status', 'submit_attempts', 'created_at', 'updated_at']
 
     def get_email(self, obj):
         return obj.user.email
@@ -97,6 +98,7 @@ class RegisterSerializer(serializers.Serializer):
             password=validated_data['password'],
         )
         return user
+
 
 class StatusUpdateSerializer(serializers.Serializer):
     ALLOWED = ['shortlisted', 'rejected', 'scored']

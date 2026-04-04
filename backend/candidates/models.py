@@ -32,6 +32,7 @@ class Candidate(models.Model):
     status = models.CharField(
         max_length=20, choices=STATUS_CHOICES, default='new', verbose_name='Статус'
     )
+    submit_attempts = models.PositiveSmallIntegerField(default=0, verbose_name='Попыток отправки')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата подачи')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Обновлено')
 
@@ -81,7 +82,7 @@ class Score(models.Model):
     red_flags      = models.JSONField(default=list, verbose_name='Красные флаги')
     recommendation = models.CharField(
         max_length=20, blank=True, verbose_name='Рекомендация'
-    ) 
+    )  
 
     raw_response = models.JSONField(default=dict, verbose_name='Сырой ответ Claude')
     scored_at    = models.DateTimeField(auto_now_add=True, verbose_name='Дата оценки')

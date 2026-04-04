@@ -23,7 +23,6 @@ logger = logging.getLogger(__name__)
 
 
 class IsStaff(permissions.BasePermission):
-    """Только Django staff (приёмная комиссия)."""
     def has_permission(self, request, view):
         return bool(request.user and request.user.is_staff)
 
@@ -86,6 +85,7 @@ def login_view(request):
     })
 
 
+
 @api_view(['GET', 'POST', 'PATCH'])
 @permission_classes([permissions.IsAuthenticated])
 @parser_classes([MultiPartParser, FormParser, JSONParser])
@@ -115,9 +115,15 @@ def my_profile(request):
         except Candidate.DoesNotExist:
             return Response({'detail': 'Анкета не найдена.'}, status=404)
 
-        if candidate.status in ('scoring', 'scored', 'shortlisted', 'rejected'):
+        if candidate.status in ('scoring', 'shortlisted', 'rejected'):
             return Response(
                 {'error': f'Редактирование недоступно — статус: {candidate.status}'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if candidate.status == 'scored' and candidate.submit_attempts >= 3:
+            return Response(
+                {'error': 'Исчерпаны все 3 попытки отправки.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -137,9 +143,21 @@ def submit_application(request):
     except Candidate.DoesNotExist:
         return Response({'error': 'Сначала создай анкету.'}, status=404)
 
-    if candidate.status in ('scoring', 'scored', 'shortlisted', 'rejected'):
+    MAX_ATTEMPTS = 3
+
+    if candidate.submit_attempts >= MAX_ATTEMPTS:
         return Response(
-            {'error': f'Заявка уже отправлена (статус: {candidate.status})'},
+            {
+                'error': f'Исчерпаны все {MAX_ATTEMPTS} попытки отправки заявки.',
+                'submit_attempts': candidate.submit_attempts,
+                'max_attempts': MAX_ATTEMPTS,
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if candidate.status == 'scoring':
+        return Response(
+            {'error': 'Заявка уже оценивается, подожди немного.'},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -153,12 +171,23 @@ def submit_application(request):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
+    candidate.submit_attempts += 1
+    candidate.status = 'scoring'
+    candidate.save(update_fields=['submit_attempts', 'status'])
+
     thread = threading.Thread(target=run_scoring, args=(candidate.id,), daemon=True)
     thread.start()
 
     from candidates.emails import send_application_received
     threading.Thread(target=send_application_received, args=(candidate,), daemon=True).start()
-    return Response({"message": "Заявка принята! Оценка займёт 1–2 минуты."})
+
+    attempts_left = MAX_ATTEMPTS - candidate.submit_attempts
+    return Response({
+        "message": "Заявка принята! Оценка займёт 1–2 минуты.",
+        "submit_attempts": candidate.submit_attempts,
+        "attempts_left": attempts_left,
+        "max_attempts": MAX_ATTEMPTS,
+    })
 
 
 @api_view(['GET'])
@@ -169,6 +198,7 @@ def dashboard_stats(request):
     ai_flagged  = Score.objects.filter(ai_detected=True).count()
     avg_score   = Score.objects.aggregate(avg=Avg('total_score'))['avg'] or 0
 
+    # Распределение по скору
     high   = Score.objects.filter(total_score__gte=8).count()
     medium = Score.objects.filter(total_score__gte=5, total_score__lt=8).count()
     low    = Score.objects.filter(total_score__lt=5).count()
