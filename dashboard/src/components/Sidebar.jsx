@@ -8,6 +8,7 @@ const NAV = [
   { path: '/shortlist',  label: 'Шортлист',       icon: '⭐' },
   { path: '/flagged',    label: 'AI-флаги',         icon: '⚠️' },
   { path: '/stats',      label: 'Статистика',       icon: '📊' },
+  { path: '/baseline',   label: 'Baseline анализ',  icon: '🎯' },
 ]
 
 export default function Sidebar() {
