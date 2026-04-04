@@ -46,18 +46,13 @@ def register(request):
     from candidates.emails import send_email_verification
     token = secrets.token_urlsafe(32)
     EmailVerification.objects.create(user=user, token=token)
-    threading.Thread(
-        target=send_email_verification,
-        args=(user, token),
-        daemon=True
-    ).start()
+    send_email_verification(user, token)
 
     return Response({
         **_tokens(user),
         'email_sent': True,
         'message': 'Регистрация успешна! Проверь почту для подтверждения email.',
     }, status=status.HTTP_201_CREATED)
-
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
