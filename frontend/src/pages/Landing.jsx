@@ -1,18 +1,17 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useTranslation } from 'react-i18next' 
+import { useTranslation } from 'react-i18next'
 import Navbar from '../components/Navbar'
 import foundationPhoto from '../assets/foundation-photo.jpg.png'
-import bachelorPhoto from '../assets/bachelor-photo.jpg' 
+import bachelorPhoto from '../assets/bachelor-photo.jpg'
 
 export default function Landing() {
-  const { t, i18n } = useTranslation() 
-  const currentLang = i18n.language.toUpperCase() 
+  const { t, i18n } = useTranslation()
+  const currentLang = i18n.language.toUpperCase()
 
   return (
     <div style={{ background: '#fff', color: '#000', fontFamily: 'Inter, sans-serif' }}>
       <Navbar />
-
 
       <section style={{ padding: '160px 20px 180px', background: '#f9f9f9', textAlign: 'center', borderBottom: '1px solid #eee' }}>
         <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
@@ -53,7 +52,6 @@ export default function Landing() {
           <div style={{ flex: 1, paddingLeft: '60px' }}>
             <h4 style={{ fontSize: '26px', fontWeight: '800', marginBottom: '30px' }}>{t('bachTitle')}</h4>
             <ul style={{ listStyle: 'none', padding: 0, fontSize: '19px', lineHeight: '2.5' }}>
-              {/* Массивтерді аудару үшін t('key', { returnObjects: true }) қолданылады */}
               {(t('bachItems', { returnObjects: true }) || []).map((item, index) => (
                 <li key={index} style={{ marginBottom: '10px' }}>• {item}</li>
               ))}
@@ -126,7 +124,7 @@ export default function Landing() {
       <section id="bachelor" style={{ padding: '160px 60px', background: '#fff' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <h2 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '60px', textTransform: 'uppercase', borderBottom: '2px solid #000', display: 'inline-block', paddingBottom: '10px' }}>
-             {t('bachProgTitle')}
+            {t('bachProgTitle')}
           </h2>
 
           <div style={{ display: 'flex', gap: '80px', alignItems: 'center', marginBottom: '80px' }}>
