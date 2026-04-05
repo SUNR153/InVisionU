@@ -12,6 +12,12 @@ const CHECKLIST = [
   { key: 'essay',       label: 'Эссе написано' },
 ]
 
+function scoreColor(v) {
+  if (v >= 8) return { color: '#085041', bg: '#E1F5EE' }
+  if (v >= 5) return { color: '#633806', bg: '#FAEEDA' }
+  return { color: '#791F1F', bg: '#FCEBEB' }
+}
+
 export default function Cabinet() {
   const navigate = useNavigate()
   const [candidate, setCandidate] = useState(null)
@@ -43,7 +49,8 @@ export default function Cabinet() {
   if (!candidate) return null
 
   const score = candidate.score
-  const daysLeft = Math.max(0, Math.ceil((new Date('2025-04-05') - new Date()) / 86400000))
+  const deadline = new Date('2025-04-05T23:59:00')
+  const daysLeft = Math.max(0, Math.ceil((deadline - new Date()) / 86400000))
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
@@ -67,7 +74,6 @@ export default function Cabinet() {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
-
           <div className="card">
             <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--green-800)', marginBottom: 16 }}>Прогресс заявки</div>
             {CHECKLIST.map(item => {
@@ -111,8 +117,8 @@ export default function Cabinet() {
                 <div style={{ fontWeight: 700, fontSize: 15 }}>5 апреля, 23:59</div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: 32, fontWeight: 700, color: 'var(--green-400)', lineHeight: 1 }}>{daysLeft}</div>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>дней</div>
+                <div style={{ fontSize: 32, fontWeight: 700, color: daysLeft === 0 ? '#E24B4A' : 'var(--green-400)', lineHeight: 1 }}>{daysLeft}</div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{daysLeft === 0 ? 'сегодня!' : 'дней'}</div>
               </div>
             </div>
 
@@ -175,24 +181,27 @@ export default function Cabinet() {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10, marginBottom: 20 }}>
               {[
-                { label: 'Итого', value: score.total_score },
-                { label: 'Мотивация', value: score.motivation_score },
-                { label: 'Лидерство', value: score.leadership_score },
-                { label: 'Аутентичность', value: score.authenticity_score },
-                { label: 'Рост', value: score.growth_score },
-              ].map(s => (
-                <div key={s.label} style={{
-                  background: 'var(--bg)', border: '1.5px solid var(--border)',
-                  borderRadius: 10, padding: '12px 8px', textAlign: 'center',
-                }}>
-                  <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '.04em' }}>
-                    {s.label}
+                { label: 'Итого',        value: score.total_score },
+                { label: 'Мотивация',    value: score.motivation_score },
+                { label: 'Лидерство',    value: score.leadership_score },
+                { label: 'Аутентичность',value: score.authenticity_score },
+                { label: 'Рост',         value: score.growth_score },
+              ].map(s => {
+                const c = scoreColor(s.value)
+                return (
+                  <div key={s.label} style={{
+                    background: c.bg, border: '1.5px solid var(--border)',
+                    borderRadius: 10, padding: '12px 8px', textAlign: 'center',
+                  }}>
+                    <div style={{ fontSize: 10, color: c.color, fontWeight: 600, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '.04em' }}>
+                      {s.label}
+                    </div>
+                    <div style={{ fontSize: 24, fontWeight: 700, color: c.color }}>
+                      {s.value.toFixed(1)}
+                    </div>
                   </div>
-                  <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--green-600)' }}>
-                    {s.value.toFixed(1)}
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
 
             {score.summary && (

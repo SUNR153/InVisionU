@@ -3,6 +3,12 @@ import { useNavigate } from 'react-router-dom'
 import { adminApi } from '../api/client'
 import { ScoreBadge, StatusBadge, AIBadge } from '../components/Badges'
 
+function scoreColor(v) {
+  if (v >= 8) return '#085041'
+  if (v >= 5) return '#633806'
+  return '#791F1F'
+}
+
 export default function Candidates({ defaultStatus = '', defaultAI = '' }) {
   const navigate = useNavigate()
   const [candidates, setCandidates] = useState([])
@@ -54,7 +60,7 @@ export default function Candidates({ defaultStatus = '', defaultAI = '' }) {
 
       <div style={{ padding: '14px 24px', background: 'var(--white)', borderBottom: '1.5px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ fontSize: 17, fontWeight: 700 }}>Все кандидаты</div>
-        <div style={{ fontSize: 13, color: 'var(--muted)' }}>Дедлайн: <strong style={{ color: 'var(--text)' }}>5 апреля 2025</strong></div>
+        <div style={{ fontSize: 13, color: 'var(--muted)' }}>Дедлайн: <strong style={{ color: 'var(--text)' }}>5 апреля 2026</strong></div>
       </div>
 
       <div style={{ padding: 24 }}>
@@ -62,7 +68,7 @@ export default function Candidates({ defaultStatus = '', defaultAI = '' }) {
           <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14, marginBottom: 24 }}>
             {[
               { label: 'Всего заявок',  value: stats.total,       color: 'var(--text)' },
-              { label: 'Средний скор',  value: stats.avg_score,   color: 'var(--green-600)' },
+              { label: 'Средний скор',  value: stats.avg_score,   color: stats.avg_score >= 7 ? 'var(--green-800)' : stats.avg_score >= 5 ? '#633806' : '#791F1F' },
               { label: 'Шортлист',      value: stats.shortlisted, color: 'var(--green-800)' },
               { label: '⚠️ AI-флаги',   value: stats.ai_flagged,  color: '#633806' },
             ].map(s => (
@@ -128,9 +134,9 @@ export default function Candidates({ defaultStatus = '', defaultAI = '' }) {
                     </div>
                   </td>
                   <td style={{ padding: '12px 14px' }}>{c.score ? <ScoreBadge score={c.score.total_score} /> : '—'}</td>
-                  <td style={{ padding: '12px 14px', fontWeight: 600, color: 'var(--green-800)' }}>{c.score ? c.score.motivation_score.toFixed(1) : '—'}</td>
-                  <td style={{ padding: '12px 14px', fontWeight: 600, color: 'var(--green-800)' }}>{c.score ? c.score.leadership_score.toFixed(1) : '—'}</td>
-                  <td style={{ padding: '12px 14px', fontWeight: 600, color: 'var(--green-800)' }}>{c.score ? c.score.authenticity_score.toFixed(1) : '—'}</td>
+                  <td style={{ padding: '12px 14px', fontWeight: 700, color: c.score ? scoreColor(c.score.motivation_score) : 'var(--muted)' }}>{c.score ? c.score.motivation_score.toFixed(1) : '—'}</td>
+                  <td style={{ padding: '12px 14px', fontWeight: 700, color: c.score ? scoreColor(c.score.leadership_score) : 'var(--muted)' }}>{c.score ? c.score.leadership_score.toFixed(1) : '—'}</td>
+                  <td style={{ padding: '12px 14px', fontWeight: 700, color: c.score ? scoreColor(c.score.authenticity_score) : 'var(--muted)' }}>{c.score ? c.score.authenticity_score.toFixed(1) : '—'}</td>
                   <td style={{ padding: '12px 14px' }}>{c.score ? <AIBadge detected={c.score.ai_detected} probability={c.score.ai_probability} /> : '—'}</td>
                   <td style={{ padding: '12px 14px' }}><StatusBadge status={c.status} /></td>
                   <td style={{ padding: '12px 14px' }} onClick={e => e.stopPropagation()}>

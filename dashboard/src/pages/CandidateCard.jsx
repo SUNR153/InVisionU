@@ -5,6 +5,12 @@ import { adminApi } from '../api/client'
 import { StatusBadge, AIBadge } from '../components/Badges'
 import Comments from '../components/Comments'
 
+function scoreColor(v) {
+  if (v >= 8) return { color: '#085041', bg: '#E1F5EE' }
+  if (v >= 5) return { color: '#633806', bg: '#FAEEDA' }
+  return { color: '#791F1F', bg: '#FCEBEB' }
+}
+
 function Field({ label, value }) {
   if (!value) return null
   return (
@@ -59,6 +65,8 @@ export default function CandidateCard() {
     { subject: 'Рост',         value: score.growth_score },
   ] : []
 
+  const totalColor = score ? scoreColor(score.total_score) : null
+
   return (
     <div style={{ flex: 1, overflow: 'auto' }}>
       {toast && (
@@ -79,7 +87,6 @@ export default function CandidateCard() {
       </div>
 
       <div style={{ padding: 24, display: 'grid', gridTemplateColumns: '1fr 320px', gap: 20, alignItems: 'start' }}>
-
         <div>
           <div className="card" style={{ marginBottom: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
@@ -97,20 +104,20 @@ export default function CandidateCard() {
             </div>
           </div>
 
-          <Field label="Почему inVision U?"             value={candidate.motivation} />
-          <Field label="Планы на 5 лет"                 value={candidate.future} />
-          <Field label="Главное достижение"              value={candidate.achievement} />
-          <Field label="Проблема которую хочет решить"   value={candidate.problem} />
-          <Field label="Эссе"                            value={candidate.essay} />
+          <Field label="Почему inVision U?"           value={candidate.motivation} />
+          <Field label="Планы на 5 лет"               value={candidate.future} />
+          <Field label="Главное достижение"            value={candidate.achievement} />
+          <Field label="Проблема которую хочет решить" value={candidate.problem} />
+          <Field label="Эссе"                          value={candidate.essay} />
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {score ? (
             <>
-              <div className="card" style={{ textAlign: 'center', padding: '20px', background: 'linear-gradient(135deg,var(--green-50),var(--green-100))' }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--green-800)', textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 6 }}>Общий скор</div>
-                <div style={{ fontSize: 48, fontWeight: 700, color: 'var(--green-800)', lineHeight: 1 }}>{score.total_score.toFixed(1)}</div>
-                <div style={{ fontSize: 13, color: 'var(--green-600)', marginTop: 6 }}>
+              <div className="card" style={{ textAlign: 'center', padding: '20px', background: totalColor.bg }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: totalColor.color, textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 6 }}>Общий скор</div>
+                <div style={{ fontSize: 48, fontWeight: 700, color: totalColor.color, lineHeight: 1 }}>{score.total_score.toFixed(1)}</div>
+                <div style={{ fontSize: 13, color: totalColor.color, marginTop: 6, opacity: 0.8 }}>
                   {score.recommendation === 'high' ? '★ Высокий приоритет' : score.recommendation === 'medium' ? '◆ Средний приоритет' : '▼ Низкий приоритет'}
                 </div>
               </div>
@@ -128,16 +135,19 @@ export default function CandidateCard() {
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 12 }}>
                   {[
-                    { label: 'Мотивация',      value: score.motivation_score },
-                    { label: 'Лидерство',      value: score.leadership_score },
-                    { label: 'Аутентичность',  value: score.authenticity_score },
-                    { label: 'Рост',           value: score.growth_score },
-                  ].map(s => (
-                    <div key={s.label} style={{ padding: '10px', background: 'var(--bg)', borderRadius: 8, textAlign: 'center' }}>
-                      <div style={{ fontSize: 10, color: 'var(--muted)', marginBottom: 2 }}>{s.label}</div>
-                      <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--green-600)' }}>{s.value.toFixed(1)}</div>
-                    </div>
-                  ))}
+                    { label: 'Мотивация',     value: score.motivation_score },
+                    { label: 'Лидерство',     value: score.leadership_score },
+                    { label: 'Аутентичность', value: score.authenticity_score },
+                    { label: 'Рост',          value: score.growth_score },
+                  ].map(s => {
+                    const c = scoreColor(s.value)
+                    return (
+                      <div key={s.label} style={{ padding: '10px', background: c.bg, borderRadius: 8, textAlign: 'center' }}>
+                        <div style={{ fontSize: 10, color: c.color, marginBottom: 2, fontWeight: 600 }}>{s.label}</div>
+                        <div style={{ fontSize: 20, fontWeight: 700, color: c.color }}>{s.value.toFixed(1)}</div>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
 
@@ -171,6 +181,10 @@ export default function CandidateCard() {
               <div style={{ fontSize: 28, marginBottom: 10 }}>⏳</div>
               <div style={{ fontWeight: 600, marginBottom: 6 }}>Ещё не оценён</div>
               <div style={{ fontSize: 13 }}>Кандидат не отправил заявку или скоринг ещё идёт</div>
+              <button className="btn-ghost" onClick={handleRescore} disabled={saving}
+                style={{ marginTop: 16, fontSize: 13 }}>
+                Запустить оценку вручную
+              </button>
             </div>
           )}
 
