@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useTranslation } from 'react-i18next' // Тілді басқару үшін қосылды
+import { useTranslation } from 'react-i18next' 
 import Navbar from '../components/Navbar'
 import foundationPhoto from '../assets/foundation-photo.jpg.png'
 import bachelorPhoto from '../assets/bachelor-photo.jpg' 
 
 export default function Landing() {
-  const { t, i18n } = useTranslation() // t функциясын және i18n объектісін алдық
-  const currentLang = i18n.language.toUpperCase() // Қазіргі белсенді тіл
+  const { t, i18n } = useTranslation() 
+  const currentLang = i18n.language.toUpperCase() 
 
   return (
     <div style={{ background: '#fff', color: '#000', fontFamily: 'Inter, sans-serif' }}>
