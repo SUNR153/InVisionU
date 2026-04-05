@@ -1,180 +1,175 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next' 
 import Navbar from '../components/Navbar'
-
-const steps = [
-  { n: '📋', title: 'Заполни анкету', desc: 'Личные данные, мотивация и достижения. Займёт ~15 минут.' },
-  { n: '✍️', title: 'Напиши эссе', desc: 'Расскажи свою историю своими словами — без шаблонов.' },
-  { n: '🤖', title: 'AI оценивает', desc: 'Claude анализирует твою заявку по 4 критериям объективно.' },
-  { n: '🎯', title: 'Получи решение', desc: 'Приёмная комиссия рассмотрит заявку в течение 2 недель.' },
-]
-
-const features = [
-  { icon: '⚡', title: 'Быстро', desc: 'Результат через 1–2 минуты после отправки' },
-  { icon: '🔍', title: 'Прозрачно', desc: 'Ты видишь свой скор и объяснение оценки' },
-  { icon: '⚖️', title: 'Честно', desc: 'AI не знает твой город или школу — только текст' },
-]
-
-const whyItems = [
-  '100% грантовое обучение — никаких скрытых платежей',
-  'Объективный AI-отбор без предвзятости и блата',
-  'Реальный опыт от практиков индустрии',
-]
-
-const bachItems = [
-  'Технологическое предпринимательство',
-  'Продуктовый дизайн и UX',
-  'Data Science и AI',
-  'Digital Marketing',
-]
+import foundationPhoto from '../assets/foundation-photo.jpg.png'
+import bachelorPhoto from '../assets/bachelor-photo.jpg' 
 
 export default function Landing() {
+  const { t, i18n } = useTranslation() 
+  const currentLang = i18n.language.toUpperCase() 
+
   return (
     <div style={{ background: '#fff', color: '#000', fontFamily: 'Inter, sans-serif' }}>
       <Navbar />
 
-      {/* Hero */}
-      <section style={{ padding: '100px 24px 80px', background: 'linear-gradient(135deg, var(--green-light) 0%, #fff 100%)', textAlign: 'center' }}>
-        <div style={{ maxWidth: 700, margin: '0 auto' }}>
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            fontSize: 12, padding: '5px 14px',
-            background: 'var(--green-light)', color: 'var(--green-dark)',
-            borderRadius: 99, marginBottom: 24, fontWeight: 600,
-            border: '1px solid var(--green-100)',
-          }}>
-            🎓 100% грантовое обучение от inDrive
-          </div>
 
-          <h1 style={{ fontSize: 52, fontWeight: 800, lineHeight: 1.1, marginBottom: 20, letterSpacing: '-0.02em' }}>
-            Стань частью<br />
-            <span style={{ color: 'var(--green-dark)' }}>inVision University</span>
+      <section style={{ padding: '160px 20px 180px', background: '#f9f9f9', textAlign: 'center', borderBottom: '1px solid #eee' }}>
+        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+          <h1 style={{ fontSize: '56px', fontWeight: '800', lineHeight: '1.1', marginBottom: '48px', textTransform: 'uppercase' }}>
+            {t('heroTitle1')}<br />
+            <span style={{ color: '#000' }}>{t('heroTitle2')}</span>
           </h1>
-
-          <p style={{ fontSize: 18, color: 'var(--text-muted)', marginBottom: 36, lineHeight: 1.75, maxWidth: 540, margin: '0 auto 36px' }}>
-            Мы ищем будущих лидеров, предпринимателей и создателей.
-            Заполни анкету — наш ИИ-ассистент поможет комиссии увидеть твой настоящий потенциал.
-          </p>
-
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link to="/register">
-              <button className="btn-primary" style={{ padding: '13px 32px', fontSize: 15, borderRadius: 10 }}>
-                Подать заявку →
-              </button>
-            </Link>
-            <a href="#how">
-              <button className="btn-secondary" style={{ padding: '13px 32px', fontSize: 15, borderRadius: 10 }}>
-                Как это работает
-              </button>
-            </a>
-          </div>
-
-          <div style={{ marginTop: 48, display: 'flex', justifyContent: 'center', gap: 40, flexWrap: 'wrap' }}>
-            {features.map(f => (
-              <div key={f.title} style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 28, marginBottom: 6 }}>{f.icon}</div>
-                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2 }}>{f.title}</div>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', maxWidth: 140 }}>{f.desc}</div>
-              </div>
-            ))}
-          </div>
+          <Link to="/register" style={{ textDecoration: 'none' }}>
+            <button style={{ background: '#000', color: '#fff', padding: '20px 50px', fontSize: '16px', fontWeight: '700', border: 'none', borderRadius: '2px', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '1px' }}>
+              {t('applyBtn')}
+            </button>
+          </Link>
         </div>
       </section>
 
-      {/* О программе */}
-      <section style={{ padding: '80px 24px', background: '#fff', borderTop: '1px solid var(--border)' }}>
-        <div style={{ maxWidth: 900, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 60, alignItems: 'start' }}>
-          <div>
-            <h2 style={{ fontSize: 36, fontWeight: 800, marginBottom: 20, lineHeight: 1.1 }}>О программе</h2>
-            <p style={{ fontSize: 16, lineHeight: 1.8, color: '#444', marginBottom: 24 }}>
-              inVision University — образовательная программа от inDrive для молодых казахстанцев, которые хотят изменить мир через технологии и предпринимательство.
-            </p>
-            <p style={{ fontSize: 16, lineHeight: 1.8, color: '#444' }}>
-              Мы ищем людей с потенциалом, а не только с высокими оценками. Наш AI-ассистент помогает комиссии увидеть твои настоящие качества.
-            </p>
+      <section id="about" style={{ padding: '180px 60px 120px', maxWidth: '1300px', margin: '0 auto' }}>
+        <div style={{ display: 'flex', gap: '100px', marginBottom: '120px', alignItems: 'flex-start' }}>
+          <h2 style={{ fontSize: '100px', fontWeight: '900', lineHeight: '0.8', margin: 0, minWidth: '350px' }}>
+            {t('aboutTitle').toUpperCase()}
+          </h2>
+          <div style={{ flex: 1, borderLeft: '1px solid #000', paddingLeft: '60px' }}>
+            <p style={{ fontSize: '20px', lineHeight: '1.8', marginBottom: '60px' }}>{t('aboutDesc')}</p>
+            <h3 style={{ fontSize: '36px', fontWeight: '800', marginBottom: '30px' }}>{t('whoTitle')}</h3>
+            <p style={{ fontSize: '20px', lineHeight: '1.8' }}>{t('whoDesc')}</p>
           </div>
-          <div style={{ background: '#f9f9f9', borderRadius: 12, padding: 32 }}>
-            <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20 }}>Направления бакалавриата</h3>
-            <ul style={{ listStyle: 'none', padding: 0 }}>
-              {bachItems.map((item, i) => (
-                <li key={i} style={{ padding: '12px 0', borderBottom: i < bachItems.length - 1 ? '1px solid var(--border)' : 'none', fontSize: 15, display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ color: 'var(--green-dark)', fontWeight: 700 }}>→</span> {item}
-                </li>
+        </div>
+
+        <div style={{ textAlign: 'center', marginBottom: '100px', paddingTop: '40px' }}>
+          <h2 style={{ fontSize: '42px', fontWeight: '800', marginBottom: '25px', textTransform: 'uppercase' }}>{t('progTitle')}</h2>
+          <p style={{ fontSize: '22px', fontWeight: '500', color: '#333' }}>{t('progSub')}</p>
+        </div>
+
+        <div style={{ display: 'flex', gap: '0', borderTop: '1px solid #eee', paddingTop: '80px', marginBottom: '60px' }}>
+          <div style={{ flex: 1, paddingRight: '60px', borderRight: '1px solid #eee' }}>
+            <h4 style={{ fontSize: '26px', fontWeight: '800', marginBottom: '30px' }}>{t('foundTitle')}</h4>
+            <p style={{ fontSize: '19px', lineHeight: '1.7', color: '#444' }}>{t('foundDesc')}</p>
+          </div>
+          <div style={{ flex: 1, paddingLeft: '60px' }}>
+            <h4 style={{ fontSize: '26px', fontWeight: '800', marginBottom: '30px' }}>{t('bachTitle')}</h4>
+            <ul style={{ listStyle: 'none', padding: 0, fontSize: '19px', lineHeight: '2.5' }}>
+              {/* Массивтерді аудару үшін t('key', { returnObjects: true }) қолданылады */}
+              {(t('bachItems', { returnObjects: true }) || []).map((item, index) => (
+                <li key={index} style={{ marginBottom: '10px' }}>• {item}</li>
               ))}
             </ul>
           </div>
         </div>
       </section>
 
-      {/* Почему inVision */}
-      <section style={{ padding: '64px 24px', background: '#d4f08d' }}>
-        <div style={{ maxWidth: 800, margin: '0 auto' }}>
-          <h3 style={{ fontSize: 22, fontWeight: 800, marginBottom: 36, textAlign: 'center' }}>Почему inVision U?</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            {whyItems.map((item, i) => (
-              <div key={i} style={{ fontSize: 18, fontWeight: 600, paddingLeft: 20, borderLeft: '4px solid #000' }}>
-                {item}
+      <section style={{ background: '#d4f08d', padding: '100px 60px', marginBottom: '100px' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <h3 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '50px' }}>{t('whyTitle')}</h3>
+          <div style={{ fontSize: '22px', fontWeight: '700', display: 'flex', flexDirection: 'column', gap: '40px' }}>
+            <p style={{ margin: 0 }}>| {t('why1')}</p>
+            <p style={{ margin: 0 }}>| {t('why2')}</p>
+            <p style={{ margin: 0 }}>| {t('why3')}</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="foundation" style={{ padding: '160px 60px', background: '#1a1a1a', color: '#fff' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <h2 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '60px', textTransform: 'uppercase', borderBottom: '2px solid #d4f08d', display: 'inline-block', paddingBottom: '10px' }}>
+            {t('foundProgTitle')}
+          </h2>
+
+          <div style={{ display: 'flex', gap: '80px', alignItems: 'center', marginBottom: '100px' }}>
+            <div style={{ flex: 1.2 }}>
+              <p style={{ fontSize: '22px', lineHeight: '1.6', color: '#ccc', marginBottom: '50px' }}>{t('foundLongDesc')}</p>
+              <h3 style={{ fontSize: '28px', marginBottom: '30px', color: '#d4f08d' }}>{t('learnTitle')}</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px' }}>
+                <div style={{ borderLeft: '3px solid #d4f08d', paddingLeft: '25px' }}>
+                  <h4 style={{ fontSize: '20px', marginBottom: '10px' }}>Academic English</h4>
+                  <p style={{ fontSize: '15px', color: '#999' }}>{t('foundEnglishDesc')}</p>
+                </div>
+                <div style={{ borderLeft: '3px solid #d4f08d', paddingLeft: '25px' }}>
+                  <h4 style={{ fontSize: '20px', marginBottom: '10px' }}>Mathematics & Logic</h4>
+                  <p style={{ fontSize: '15px', color: '#999' }}>{t('foundMathDesc')}</p>
+                </div>
               </div>
-            ))}
+            </div>
+            <div style={{ flex: 0.8 }}>
+              <img src={foundationPhoto} alt="Foundation" style={{ width: '100%', height: 'auto', borderRadius: '4px', objectFit: 'cover', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }} />
+            </div>
+          </div>
+
+          <div style={{ background: '#d4f08d', color: '#000', padding: '60px', borderRadius: '4px', marginBottom: '100px' }}>
+            <h3 style={{ fontSize: '32px', fontWeight: '800', marginBottom: '40px', textAlign: 'center' }}>{t('advTitle')}</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '30px', textAlign: 'center' }}>
+              <div><p style={{ fontSize: '18px', fontWeight: '700' }}>100% Grant</p></div>
+              <div><p style={{ fontSize: '18px', fontWeight: '700' }}>Soft Skills</p></div>
+              <div><p style={{ fontSize: '18px', fontWeight: '700' }}>Impact Focus</p></div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '80px', paddingTop: '60px', borderTop: '1px solid #333' }}>
+            <div style={{ flex: 1.2 }}>
+              <h3 style={{ fontSize: '32px', fontWeight: '800', marginBottom: '40px' }}>{t('stepTitle')}</h3>
+              {(t('steps', { returnObjects: true }) || []).map((step, i) => (
+                <p key={i} style={{ fontSize: '20px', color: '#ccc', marginBottom: '15px' }}>{step}</p>
+              ))}
+            </div>
+            <div style={{ flex: 0.8, background: '#222', padding: '40px', borderRadius: '4px', alignSelf: 'start' }}>
+              <h4 style={{ color: '#d4f08d', marginBottom: '15px', fontSize: '18px' }}>{t('deadline')}</h4>
+              <p style={{ fontSize: '32px', fontWeight: '800', margin: 0 }}>{t('deadlineDate')}</p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Шаги */}
-      <section id="how" style={{ background: '#fff', borderTop: '1px solid var(--border)', padding: '64px 24px' }}>
-        <div style={{ maxWidth: 800, margin: '0 auto' }}>
-          <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8, textAlign: 'center' }}>Как проходит отбор</h2>
-          <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: 14, marginBottom: 40 }}>
-            От регистрации до решения — всё онлайн
-          </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 16 }}>
-            {steps.map((s, i) => (
-              <div key={i} className="card" style={{ padding: '20px 16px', textAlign: 'center' }}>
-                <div style={{ fontSize: 32, marginBottom: 12 }}>{s.n}</div>
-                <div style={{ fontWeight: 700, marginBottom: 6, fontSize: 14 }}>{s.title}</div>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}>{s.desc}</div>
-              </div>
-            ))}
+      <section id="bachelor" style={{ padding: '160px 60px', background: '#fff' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <h2 style={{ fontSize: '48px', fontWeight: '800', marginBottom: '60px', textTransform: 'uppercase', borderBottom: '2px solid #000', display: 'inline-block', paddingBottom: '10px' }}>
+             {t('bachProgTitle')}
+          </h2>
+
+          <div style={{ display: 'flex', gap: '80px', alignItems: 'center', marginBottom: '80px' }}>
+            <div style={{ flex: 0.8 }}>
+              <img src={bachelorPhoto} alt="Bachelor" style={{ width: '100%', height: 'auto', borderRadius: '4px', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }} />
+            </div>
+            <div style={{ flex: 1.2 }}>
+              <p style={{ fontSize: '22px', lineHeight: '1.8', color: '#333', marginBottom: '40px' }}>{t('bachLongDesc')}</p>
+              <h4 style={{ fontSize: '24px', fontWeight: '800', marginBottom: '20px' }}>{t('studyDirections')}</h4>
+              <ul style={{ listStyle: 'none', padding: 0, fontSize: '18px', lineHeight: '2.2' }}>
+                {(t('bachItems', { returnObjects: true }) || []).map((item, index) => (
+                  <li key={index} style={{ borderLeft: '3px solid #d4f08d', paddingLeft: '20px', marginBottom: '10px' }}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div style={{ marginTop: '100px', padding: '60px', background: '#f9f9f9', borderRadius: '4px' }}>
+            <h3 style={{ fontSize: '32px', fontWeight: '800', marginBottom: '40px' }}>{t('bachReqTitle')}</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '40px' }}>
+              <p style={{ fontSize: '18px', color: '#555', lineHeight: '1.6' }}>{t('bachReq1')}</p>
+              <p style={{ fontSize: '18px', color: '#555', lineHeight: '1.6' }}>{t('bachReq2')}</p>
+              <p style={{ fontSize: '18px', color: '#555', lineHeight: '1.6' }}>{t('bachReq3')}</p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section style={{ padding: '64px 24px', textAlign: 'center', background: 'var(--green-light)' }}>
-        <div style={{ maxWidth: 480, margin: '0 auto' }}>
-          <div style={{ fontSize: 36, marginBottom: 12 }}>🚀</div>
-          <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>Готов подать заявку?</h2>
-          <p style={{ color: 'var(--text-muted)', marginBottom: 24, fontSize: 14, lineHeight: 1.6 }}>
-            Дедлайн подачи заявок: <strong style={{ color: 'var(--text)' }}>5 апреля 2026, 23:59</strong>
-          </p>
-          <Link to="/register">
-            <button className="btn-primary" style={{ padding: '13px 32px', fontSize: 15, borderRadius: 10 }}>
-              Начать анкету →
-            </button>
-          </Link>
+      <footer id="contacts" style={{ background: '#1a1a1a', color: '#fff', padding: '100px 60px', borderTop: '1px solid #333' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '60px' }}>
+          <div>
+            <h3 style={{ fontSize: '24px', fontWeight: '800', marginBottom: '25px' }}>{t('footerContact')}</h3>
+            <p style={{ fontSize: '16px', color: '#aaa', lineHeight: '1.6' }}>{t('footerDesc')}</p>
+          </div>
+          <div style={{ fontSize: '16px', lineHeight: '1.8' }}>
+            <p style={{ marginBottom: '20px' }}><strong>{t('phoneLabel')}:</strong><br /><span style={{ color: '#d4f08d' }}>+7 771 070 73 70</span><br /><span style={{ fontSize: '13px', color: '#888' }}>({t('whatsappNotice')})</span></p>
+            <p style={{ marginBottom: '20px' }}><strong>{t('contactPerson')}</strong><br /><strong>{t('footerTime')}</strong> 09:00 - 18:00</p>
+            <p><strong>Email:</strong><br /><span style={{ color: '#d4f08d' }}>info@invisionu.education</span></p>
+          </div>
+          <div><p style={{ fontSize: '16px', lineHeight: '1.8' }}><strong>{t('addressLabel')}</strong><br />{t('footerAddress')}</p></div>
         </div>
-      </section>
-
-      {/* Footer */}
-      <footer style={{ background: '#1a1a1a', color: '#fff', padding: '60px 24px' }}>
-        <div style={{ maxWidth: 900, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 40 }}>
-          <div>
-            <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 16 }}>Контакты</h3>
-            <p style={{ fontSize: 14, color: '#aaa', lineHeight: 1.8 }}>
-              Телефон: <span style={{ color: '#d4f08d' }}>+7 771 070 73 70</span><br />
-              Email: <span style={{ color: '#d4f08d' }}>info@invisionu.education</span>
-            </p>
-          </div>
-          <div>
-            <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 16 }}>Адрес</h3>
-            <p style={{ fontSize: 14, color: '#aaa', lineHeight: 1.8 }}>Алматы, Казахстан</p>
-          </div>
-          <div>
-            <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 16 }}>Режим работы</h3>
-            <p style={{ fontSize: 14, color: '#aaa', lineHeight: 1.8 }}>09:00 — 18:00</p>
-          </div>
-        </div>
-        <div style={{ maxWidth: 900, margin: '40px auto 0', paddingTop: 24, borderTop: '1px solid #333', fontSize: 13, color: '#666', textAlign: 'center' }}>
-          © 2026 inVision U. Все права защищены.
+        <div style={{ maxWidth: '1200px', margin: '80px auto 0', paddingTop: '30px', borderTop: '1px solid #333', fontSize: '13px', color: '#666', textAlign: 'center' }}>
+          © 2026 inVision U. {t('copyright')}
         </div>
       </footer>
     </div>
