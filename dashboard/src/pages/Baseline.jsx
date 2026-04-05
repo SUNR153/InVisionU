@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Cell, ResponsiveContainer, ScatterChart, Scatter, CartesianGrid, Legend } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Cell, ResponsiveContainer } from 'recharts'
 import { adminApi } from '../api/client'
 
 function MetricCard({ label, value, sub, color = 'var(--green-800)' }) {
@@ -32,9 +32,9 @@ export default function Baseline() {
   const decided = candidates.filter(c => ['shortlisted', 'rejected'].includes(c.status))
 
   const baselineResults = decided.map(c => {
-    const aiDecision      = c.score.total_score >= threshold ? 'shortlisted' : 'rejected'
-    const humanDecision   = c.status
-    const match           = aiDecision === humanDecision
+    const aiDecision    = c.score.total_score >= threshold ? 'shortlisted' : 'rejected'
+    const humanDecision = c.status
+    const match         = aiDecision === humanDecision
     return { ...c, aiDecision, match }
   })
 
@@ -42,20 +42,32 @@ export default function Baseline() {
   const total     = baselineResults.length
   const accuracy  = total > 0 ? Math.round((correct / total) * 100) : 0
 
-  const truePos   = baselineResults.filter(c => c.aiDecision === 'shortlisted' && c.status === 'shortlisted').length
-  const falsePos  = baselineResults.filter(c => c.aiDecision === 'shortlisted' && c.status === 'rejected').length
-  const falseNeg  = baselineResults.filter(c => c.aiDecision === 'rejected'    && c.status === 'shortlisted').length
-  const trueNeg   = baselineResults.filter(c => c.aiDecision === 'rejected'    && c.status === 'rejected').length
+  const truePos  = baselineResults.filter(c => c.aiDecision === 'shortlisted' && c.status === 'shortlisted').length
+  const falsePos = baselineResults.filter(c => c.aiDecision === 'shortlisted' && c.status === 'rejected').length
+  const falseNeg = baselineResults.filter(c => c.aiDecision === 'rejected'    && c.status === 'shortlisted').length
+  const trueNeg  = baselineResults.filter(c => c.aiDecision === 'rejected'    && c.status === 'rejected').length
 
   const precision = truePos + falsePos > 0 ? Math.round((truePos / (truePos + falsePos)) * 100) : 0
   const recall    = truePos + falseNeg > 0 ? Math.round((truePos / (truePos + falseNeg)) * 100) : 0
 
+  // Random baseline — случайное решение
+  const shortlistRate   = total > 0 ? decided.filter(c => c.status === 'shortlisted').length / total : 0.5
+  const randomAccuracy  = Math.round((shortlistRate * shortlistRate + (1 - shortlistRate) * (1 - shortlistRate)) * 100)
+  const majorityClass   = shortlistRate >= 0.5 ? 'shortlisted' : 'rejected'
+  const majorityAccuracy = Math.round(Math.max(shortlistRate, 1 - shortlistRate) * 100)
+
+  const comparisonData = [
+    { name: 'Random', accuracy: randomAccuracy,    fill: '#E24B4A' },
+    { name: 'Majority', accuracy: majorityAccuracy, fill: '#EF9F27' },
+    { name: 'Claude AI', accuracy: accuracy,         fill: '#1D9E75' },
+  ]
+
   const buckets = [
-    { name: '0–3',   count: candidates.filter(c => c.score.total_score < 3).length,  fill: '#E24B4A' },
-    { name: '3–5',   count: candidates.filter(c => c.score.total_score >= 3 && c.score.total_score < 5).length, fill: '#EF9F27' },
-    { name: '5–7',   count: candidates.filter(c => c.score.total_score >= 5 && c.score.total_score < 7).length, fill: '#FAC775' },
-    { name: '7–8',   count: candidates.filter(c => c.score.total_score >= 7 && c.score.total_score < 8).length, fill: '#9FE1CB' },
-    { name: '8–10',  count: candidates.filter(c => c.score.total_score >= 8).length,  fill: '#1D9E75' },
+    { name: '0–3',  count: candidates.filter(c => c.score.total_score < 3).length,  fill: '#E24B4A' },
+    { name: '3–5',  count: candidates.filter(c => c.score.total_score >= 3 && c.score.total_score < 5).length, fill: '#EF9F27' },
+    { name: '5–7',  count: candidates.filter(c => c.score.total_score >= 5 && c.score.total_score < 7).length, fill: '#FAC775' },
+    { name: '7–8',  count: candidates.filter(c => c.score.total_score >= 7 && c.score.total_score < 8).length, fill: '#9FE1CB' },
+    { name: '8–10', count: candidates.filter(c => c.score.total_score >= 8).length,  fill: '#1D9E75' },
   ]
 
   return (
@@ -69,7 +81,7 @@ export default function Baseline() {
         <div className="card" style={{ marginBottom: 20, padding: '16px 20px', background: 'var(--green-50)', border: '1.5px solid var(--green-100)' }}>
           <div style={{ fontSize: 13, color: 'var(--green-800)', lineHeight: 1.7 }}>
             <strong>Baseline правило:</strong> если AI скор ≥ порога → шортлист, иначе → отклонить.<br />
-            Сравниваем это простое правило с реальными решениями комиссии. Чем выше совпадение — тем лучше AI понимает критерии отбора.
+            Сравниваем Claude с простыми baseline методами — случайным выбором и правилом большинства.
           </div>
         </div>
 
@@ -94,10 +106,50 @@ export default function Baseline() {
         {total > 0 ? (
           <>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 20 }}>
-              <MetricCard label="Точность baseline" value={`${accuracy}%`} sub={`${correct} из ${total} решений`} color="var(--green-800)" />
+              <MetricCard label="Точность Claude" value={`${accuracy}%`} sub={`${correct} из ${total} решений`} color="var(--green-800)" />
               <MetricCard label="Precision" value={`${precision}%`} sub="Из предсказанных шортлист" color="var(--green-600)" />
               <MetricCard label="Recall" value={`${recall}%`} sub="Найдено реальных шортлист" color="#0C447C" />
               <MetricCard label="Проанализировано" value={total} sub="кандидатов с решением" color="var(--text)" />
+            </div>
+
+            {/* Claude vs Baseline сравнение */}
+            <div className="card" style={{ marginBottom: 20 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--green-800)', marginBottom: 6 }}>
+                Claude AI vs Baseline методы
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 16 }}>
+                Random — случайное решение · Majority — всегда предсказывает самый частый класс · Claude AI — наша модель
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 20 }}>
+                {[
+                  { label: 'Random baseline', value: `${randomAccuracy}%`, desc: 'Случайный выбор', color: '#791F1F', bg: '#FCEBEB' },
+                  { label: 'Majority baseline', value: `${majorityAccuracy}%`, desc: `Всегда предсказывает "${majorityClass === 'shortlisted' ? 'шортлист' : 'отклонить'}"`, color: '#633806', bg: '#FAEEDA' },
+                  { label: 'Claude AI', value: `${accuracy}%`, desc: 'Наша модель', color: '#085041', bg: '#E1F5EE' },
+                ].map(s => (
+                  <div key={s.label} style={{ padding: '16px', background: s.bg, borderRadius: 10, textAlign: 'center' }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: s.color, textTransform: 'uppercase', marginBottom: 6 }}>{s.label}</div>
+                    <div style={{ fontSize: 32, fontWeight: 700, color: s.color, lineHeight: 1 }}>{s.value}</div>
+                    <div style={{ fontSize: 11, color: s.color, marginTop: 4, opacity: 0.8 }}>{s.desc}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ height: 160 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={comparisonData} barSize={60}>
+                    <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--muted)' }} axisLine={false} tickLine={false} />
+                    <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: 'var(--muted)' }} axisLine={false} tickLine={false} unit="%" />
+                    <Tooltip formatter={v => [`${v}%`, 'Точность']} />
+                    <Bar dataKey="accuracy" radius={[6, 6, 0, 0]}>
+                      {comparisonData.map((d, i) => <Cell key={i} fill={d.fill} />)}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              {accuracy > majorityAccuracy && (
+                <div style={{ marginTop: 12, padding: '10px 14px', background: 'var(--green-50)', borderRadius: 8, fontSize: 13, color: 'var(--green-800)', fontWeight: 500 }}>
+                  ✅ Claude превосходит все baseline методы на {accuracy - majorityAccuracy}% — модель действительно работает лучше случайного выбора
+                </div>
+              )}
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
@@ -166,20 +218,12 @@ export default function Baseline() {
                         {c.score.total_score.toFixed(1)}
                       </td>
                       <td style={{ padding: '10px 16px' }}>
-                        <span style={{
-                          padding: '3px 10px', borderRadius: 99, fontSize: 12, fontWeight: 600,
-                          background: c.aiDecision === 'shortlisted' ? 'var(--green-50)' : 'var(--red-bg)',
-                          color: c.aiDecision === 'shortlisted' ? 'var(--green-800)' : '#791F1F',
-                        }}>
+                        <span style={{ padding: '3px 10px', borderRadius: 99, fontSize: 12, fontWeight: 600, background: c.aiDecision === 'shortlisted' ? 'var(--green-50)' : 'var(--red-bg)', color: c.aiDecision === 'shortlisted' ? 'var(--green-800)' : '#791F1F' }}>
                           {c.aiDecision === 'shortlisted' ? 'Шортлист' : 'Отклонить'}
                         </span>
                       </td>
                       <td style={{ padding: '10px 16px' }}>
-                        <span style={{
-                          padding: '3px 10px', borderRadius: 99, fontSize: 12, fontWeight: 600,
-                          background: c.status === 'shortlisted' ? 'var(--green-50)' : 'var(--red-bg)',
-                          color: c.status === 'shortlisted' ? 'var(--green-800)' : '#791F1F',
-                        }}>
+                        <span style={{ padding: '3px 10px', borderRadius: 99, fontSize: 12, fontWeight: 600, background: c.status === 'shortlisted' ? 'var(--green-50)' : 'var(--red-bg)', color: c.status === 'shortlisted' ? 'var(--green-800)' : '#791F1F' }}>
                           {c.status === 'shortlisted' ? 'Шортлист' : 'Отклонён'}
                         </span>
                       </td>
