@@ -145,4 +145,5 @@ LOGGING = {
     },
 }
 
-RESEND_API_KEY = os.getenv('RESEND_API_KEY', '')
+MAILERSEND_API_KEY    = os.getenv('MAILERSEND_API_KEY', '')
+MAILERSEND_FROM_EMAIL = os.getenv('MAILERSEND_FROM_EMAIL', '')
